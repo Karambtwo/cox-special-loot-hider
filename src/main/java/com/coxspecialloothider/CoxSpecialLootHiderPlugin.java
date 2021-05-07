@@ -5,6 +5,10 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.GameState;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -30,6 +34,8 @@ public class CoxSpecialLootHiderPlugin extends Plugin
 	private ChatMessageManager chatMessageManager;
 
 	private ArrayList<String> turnOffMessages = new ArrayList<String>();
+	private boolean chestLooted;
+	private final int chestID = WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
 
 	private static final String[] listOfItems = {"Dexterous prayer scroll", "Arcane prayer scroll", "Twisted buckler",
 			"Dragon hunter crossbow", "Dinh's bulwark", "Ancestral hat", "Ancestral robe top", "Ancestral robe bottom",
@@ -45,6 +51,11 @@ public class CoxSpecialLootHiderPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
+		revealLoot();
+		chestLooted = false;
+	}
+
+	private void revealLoot() {
 		//Shows the player the messages that were censored
 		//Multiple items are stored in the ArrayList and re-sent upon turning off the plugin
 		//On completion of another raid, the list is cleared
@@ -52,6 +63,27 @@ public class CoxSpecialLootHiderPlugin extends Plugin
 			turnOffMessages.forEach((n) -> client.addChatMessage(ChatMessageType.FRIENDSCHATNOTIFICATION, "", n, ""));
 		}
 		client.refreshChat();
+	}
+
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded widgetLoaded) {
+		if (widgetLoaded.getGroupId() == chestID) {
+			if (chestLooted) {
+				return;
+			}
+			revealLoot();
+			chestLooted = true;
+
+			// test messages
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=ff0000>Loot revealed!</col>.", null);
+		}
+	}
+
+	@Subscribe
+	public void onGameStateChanged(final GameStateChanged event) {
+		if (event.getGameState() == GameState.LOADING && !client.isInInstancedRegion()) {
+			chestLooted = false;
+		}
 	}
 
 	@Subscribe
