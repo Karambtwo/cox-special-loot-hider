@@ -4,7 +4,6 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.config.ConfigManager;
@@ -32,7 +31,6 @@ public class CoxSpecialLootHiderPlugin extends Plugin
 
 	private ArrayList<String> turnOffMessages = new ArrayList<String>();
 	private boolean chestLooted;
-	private final int chestID = WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
 
 	private static final String[] listOfItems = {"Dexterous prayer scroll", "Arcane prayer scroll", "Twisted buckler",
 			"Dragon hunter crossbow", "Dinh's bulwark", "Ancestral hat", "Ancestral robe top", "Ancestral robe bottom",
@@ -64,26 +62,15 @@ public class CoxSpecialLootHiderPlugin extends Plugin
 
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded widgetLoaded) {
+		int chestID = WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
 		if (widgetLoaded.getGroupId() == chestID) {
 			if (chestLooted) {
 				return;
 			}
 			revealLoot();
 			chestLooted = true;
-
-			// test messages
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "<col=ff0000>Loot revealed!</col>.", null);
 		}
 	}
-
-	/*
-	@Subscribe
-	public void onGameStateChanged(final GameStateChanged event) {
-		if (event.getGameState() == GameState.LOADING && !client.isInInstancedRegion()) {
-			chestLooted = false;
-		}
-	}
-	 */
 
 	@Subscribe
 	public void onChatMessage(ChatMessage chatMessage)
