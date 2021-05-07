@@ -3,9 +3,7 @@ package com.coxspecialloothider;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
+import net.runelite.api.*;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
@@ -14,7 +12,6 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.api.MessageNode;
 import net.runelite.client.chat.ChatMessageManager;
 import java.util.ArrayList;
 
@@ -79,22 +76,30 @@ public class CoxSpecialLootHiderPlugin extends Plugin
 		}
 	}
 
+	/*
 	@Subscribe
 	public void onGameStateChanged(final GameStateChanged event) {
 		if (event.getGameState() == GameState.LOADING && !client.isInInstancedRegion()) {
 			chestLooted = false;
 		}
 	}
+	 */
 
 	@Subscribe
 	public void onChatMessage(ChatMessage chatMessage)
 	{
+		// solo mode
+		if (config.soloOnly() && client.getVar(Varbits.RAID_PARTY_SIZE) > 1) {
+			return;
+		}
+
 		if (chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION)
 		{
 			//Shown when completing a raid. When this happens, the previous loots are cleared from our storage of
 			//messages so that the player only sees items from the last raid when turning off the plugin
 			if(chatMessage.getMessage().contains("Congratulations - your raid is complete!")){
 				turnOffMessages.clear();
+				chestLooted = false;
 			}
 
 			//Iterating through the list of CoX uniques
