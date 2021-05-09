@@ -8,5 +8,7 @@ import net.runelite.client.config.ConfigSection;
 @ConfigGroup("example")
 public interface CoxSpecialLootHiderConfig extends Config
 {
-	//The only setting needed is the plugin being turned on
+    // only hide in solos ?
+    @ConfigItem(position = 0, keyName = "soloOnly", name = "Censor solo only", description = "Only censors the loot in solo raids.")
+    default boolean soloOnly() { return false; }
 }
